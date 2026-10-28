@@ -28,8 +28,12 @@ export function renderWeather(weather, unit) {
   document.querySelector("#current-humidity").textContent = `${weather.humidity}%`;
   document.querySelector("#current-time").textContent = getLocalTime(weather.timezone);
   document.querySelector("#current-date").textContent = getLocalDate(weather.timezone);
-  document.querySelector("#footer-location").textContent =
-    `${weather.city.toLocaleUpperCase()} · ${weather.countryCode}`;
+  document.querySelector("#footer-location").textContent = [
+    weather.city.toLocaleUpperCase(),
+    weather.countryCode,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   document.querySelector("#unit-toggle").textContent = `°${unit}`;
   document.querySelector("#unit-toggle").setAttribute(
     "aria-label",
@@ -60,6 +64,28 @@ export function renderForecast(forecast, unit) {
   grid.replaceChildren(...cards);
 }
 
+export function renderForecastSkeleton() {
+  const grid = document.querySelector("#forecast-grid");
+  const cards = Array.from({ length: 7 }, () => {
+    const card = createElement("article", "forecast-card forecast-card-skeleton");
+    card.setAttribute("aria-hidden", "true");
+    card.append(
+      createElement("span", "skeleton-block skeleton-day"),
+      createElement("span", "skeleton-block skeleton-icon"),
+      createElement("span", "skeleton-block skeleton-temperatures"),
+    );
+    return card;
+  });
+  grid.replaceChildren(...cards);
+}
+
+export function clearForecast() {
+  const grid = document.querySelector("#forecast-grid");
+  grid.replaceChildren(
+    createElement("p", "forecast-empty", "A forecast will appear here when a city is selected."),
+  );
+}
+
 export function renderCityOptions(cities, onSelect) {
   const options = document.querySelector("#city-options");
   const searchInput = document.querySelector("#city-search");
@@ -80,20 +106,21 @@ export function renderCityOptions(cities, onSelect) {
 export function renderFavorites(favorites, activeCityId, onSelect, unit) {
   const list = document.querySelector("#favorite-list");
   const buttons = favorites.map((city) => {
+    const name = city.city ?? city.name;
     const button = createElement("button", "favorite-city");
     button.type = "button";
     button.setAttribute("aria-current", String(city.id === activeCityId));
     button.setAttribute(
       "aria-label",
-      `${city.city}, ${formatTemperature(city.temperature, unit)}`,
+      `${name}, ${Number.isFinite(city.temperature) ? formatTemperature(city.temperature, unit) : "load forecast"}`,
     );
 
-    const icon = createElement("span", "favorite-city-icon", city.icon);
+    const icon = createElement("span", "favorite-city-icon", city.icon ?? "📍");
     icon.setAttribute("aria-hidden", "true");
     const info = createElement("span", "favorite-city-info");
     info.append(
-      createElement("span", "favorite-city-name", city.city),
-      createElement("span", "favorite-city-condition", city.condition),
+      createElement("span", "favorite-city-name", name),
+      createElement("span", "favorite-city-condition", city.condition ?? city.country),
     );
     button.append(
       icon,
@@ -101,7 +128,7 @@ export function renderFavorites(favorites, activeCityId, onSelect, unit) {
       createElement(
         "span",
         "favorite-city-temperature",
-        formatTemperature(city.temperature, unit),
+        Number.isFinite(city.temperature) ? formatTemperature(city.temperature, unit) : "—",
       ),
     );
     button.addEventListener("click", () => onSelect(city.id));
@@ -134,8 +161,24 @@ export function renderFavorites(favorites, activeCityId, onSelect, unit) {
   );
 }
 
-export function setStatus(message = "") {
-  document.querySelector("#weather-status").textContent = message;
+export function setStatus(message = "", isLoading = false) {
+  const status = document.querySelector("#weather-status");
+  status.classList.toggle("is-loading", isLoading);
+  if (!isLoading) {
+    status.textContent = message;
+    return;
+  }
+
+  const label = createElement("span", "loading-label", message);
+  label.setAttribute("aria-hidden", "true");
+  const skeleton = createElement("span", "loading-skeleton");
+  skeleton.setAttribute("aria-hidden", "true");
+  skeleton.append(
+    createElement("span", "skeleton-block"),
+    createElement("span", "skeleton-block"),
+    createElement("span", "skeleton-block"),
+  );
+  status.replaceChildren(createElement("span", "sr-only", message), label, skeleton);
 }
 
 export function setError(message = "") {

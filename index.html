@@ -66,7 +66,13 @@
               <p class="eyebrow">YOUR WEATHER, AT A GLANCE</p>
               <h1>Good morning<span class="heading-period">.</span></h1>
             </div>
-            <p class="updated-label"><span class="updated-dot"></span>Updated just now</p>
+            <div class="section-actions">
+              <button class="location-button" id="location-button" type="button">
+                <span aria-hidden="true">⌖</span>
+                Use my location
+              </button>
+              <p class="updated-label"><span class="updated-dot"></span>Updated just now</p>
+            </div>
           </div>
 
           <div id="weather-status" class="status-message" role="status" aria-live="polite"></div>
@@ -103,7 +109,7 @@
 
             <div class="hero-weather">
               <div class="temperature-block">
-                <p class="today-label">TODAY,                 <span id="current-date">—</span></p>
+                <p class="today-label">TODAY, <span id="current-date">—</span></p>
                 <div class="temperature-line">
                   <span class="temperature" id="current-temperature">—</span>
                   <span class="degree">°</span>
