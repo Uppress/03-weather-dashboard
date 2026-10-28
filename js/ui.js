@@ -1,7 +1,27 @@
-export function renderWeather(weather) {
+function createElement(tagName, className, text) {
+  const element = document.createElement(tagName);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function convertTemperature(fahrenheit, unit) {
+  return unit === "C"
+    ? Math.round(((fahrenheit - 32) * 5) / 9)
+    : Math.round(fahrenheit);
+}
+
+function formatTemperature(fahrenheit, unit) {
+  return `${convertTemperature(fahrenheit, unit)}°`;
+}
+
+export function renderWeather(weather, unit) {
   document.querySelector("#current-city").textContent = weather.city;
   document.querySelector("#current-country").textContent = weather.country;
-  document.querySelector("#current-temperature").textContent = weather.temperature;
+  document.querySelector("#current-temperature").textContent = String(
+    convertTemperature(weather.temperature, unit),
+  );
+  document.querySelector(".temperature-line .unit").textContent = unit;
   document.querySelector("#current-condition").textContent = weather.condition;
   document.querySelector("#current-icon").textContent = weather.icon;
   document.querySelector("#current-wind").textContent = `${weather.wind} mph`;
@@ -10,67 +30,92 @@ export function renderWeather(weather) {
   document.querySelector("#current-date").textContent = getLocalDate(weather.timezone);
   document.querySelector("#footer-location").textContent =
     `${weather.city.toLocaleUpperCase()} · ${weather.countryCode}`;
-
-  const favoriteButton = document.querySelector("#favorite-toggle");
-  favoriteButton.setAttribute(
+  document.querySelector("#unit-toggle").textContent = `°${unit}`;
+  document.querySelector("#unit-toggle").setAttribute(
     "aria-label",
-    `Add ${weather.city} to favourites`,
+    `Switch to ${unit === "F" ? "Celsius" : "Fahrenheit"}`,
   );
-  renderForecast(weather.forecast);
+
+  renderForecast(weather.forecast, unit);
 }
 
-export function renderForecast(forecast) {
+export function renderForecast(forecast, unit) {
   const grid = document.querySelector("#forecast-grid");
   const cards = forecast.map((day) => {
-    const card = document.createElement("article");
-    card.className = "forecast-card";
-    card.innerHTML = `
-      <span class="forecast-day"></span>
-      <span class="forecast-icon" aria-hidden="true"></span>
-      <span class="forecast-temperatures">
-        <span class="forecast-high"></span>
-        <span class="forecast-low"></span>
-      </span>
-    `;
-    card.querySelector(".forecast-day").textContent = day.day;
-    card.querySelector(".forecast-icon").textContent = day.icon;
-    card.querySelector(".forecast-high").textContent = `${day.high}°`;
-    card.querySelector(".forecast-low").textContent = `${day.low}°`;
+    const card = createElement("article", "forecast-card");
+    card.append(
+      createElement("span", "forecast-day", day.day),
+      createElement("span", "forecast-icon", day.icon),
+    );
+    card.lastElementChild.setAttribute("aria-hidden", "true");
+
+    const temperatures = createElement("span", "forecast-temperatures");
+    temperatures.append(
+      createElement("span", "forecast-high", formatTemperature(day.high, unit)),
+      createElement("span", "forecast-low", formatTemperature(day.low, unit)),
+    );
+    card.append(temperatures);
     return card;
   });
   grid.replaceChildren(...cards);
 }
 
-export function renderFavorites(favorites, activeCityId, onSelect) {
+export function renderCityOptions(cities, onSelect) {
+  const options = document.querySelector("#city-options");
+  const searchInput = document.querySelector("#city-search");
+  const buttons = cities.map((city) => {
+    const button = createElement("button", "city-option");
+    button.type = "button";
+    button.setAttribute("role", "option");
+    const place = [city.name, city.region, city.country].filter(Boolean).join(", ");
+    button.textContent = place;
+    button.addEventListener("click", () => onSelect(city));
+    return button;
+  });
+  options.replaceChildren(...buttons);
+  options.hidden = buttons.length === 0;
+  searchInput.setAttribute("aria-expanded", String(buttons.length > 0));
+}
+
+export function renderFavorites(favorites, activeCityId, onSelect, unit) {
   const list = document.querySelector("#favorite-list");
   const buttons = favorites.map((city) => {
-    const button = document.createElement("button");
-    button.className = "favorite-city";
+    const button = createElement("button", "favorite-city");
     button.type = "button";
     button.setAttribute("aria-current", String(city.id === activeCityId));
-    button.setAttribute("aria-label", `${city.city}, ${city.temperature} degrees`);
-    button.innerHTML = `
-      <span class="favorite-city-icon" aria-hidden="true"></span>
-      <span class="favorite-city-info">
-        <span class="favorite-city-name"></span>
-        <span class="favorite-city-condition"></span>
-      </span>
-      <span class="favorite-city-temperature"></span>
-    `;
-    button.querySelector(".favorite-city-icon").textContent = city.icon;
-    button.querySelector(".favorite-city-name").textContent = city.city;
-    button.querySelector(".favorite-city-condition").textContent = city.condition;
-    button.querySelector(".favorite-city-temperature").innerHTML =
-      `${city.temperature}<span>°</span>`;
+    button.setAttribute(
+      "aria-label",
+      `${city.city}, ${formatTemperature(city.temperature, unit)}`,
+    );
+
+    const icon = createElement("span", "favorite-city-icon", city.icon);
+    icon.setAttribute("aria-hidden", "true");
+    const info = createElement("span", "favorite-city-info");
+    info.append(
+      createElement("span", "favorite-city-name", city.city),
+      createElement("span", "favorite-city-condition", city.condition),
+    );
+    button.append(
+      icon,
+      info,
+      createElement(
+        "span",
+        "favorite-city-temperature",
+        formatTemperature(city.temperature, unit),
+      ),
+    );
     button.addEventListener("click", () => onSelect(city.id));
     return button;
   });
 
   if (buttons.length === 0) {
-    const emptyState = document.createElement("p");
-    emptyState.className = "empty-favorites";
-    emptyState.textContent = "No favourites yet. Add a city from its forecast.";
-    buttons.push(emptyState);
+    buttons.push(
+      createElement(
+        "p",
+        "empty-favorites",
+        "No favourites yet. Add a city from its forecast.",
+      ),
+    );
   }
 
   list.replaceChildren(...buttons);

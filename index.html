@@ -31,22 +31,27 @@
           <span class="brand-name">atmos<span>.</span></span>
         </a>
 
-        <form class="search-form" id="search-form" role="search">
-          <label class="sr-only" for="city-search">Search for a city</label>
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7" />
-            <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-          </svg>
-          <input
-            id="city-search"
-            name="city"
-            type="search"
-            placeholder="Search a city..."
-            autocomplete="off"
-            required
-          />
-          <button class="search-button" type="submit">Search</button>
-        </form>
+        <div class="search-area">
+          <form class="search-form" id="search-form" role="search">
+            <label class="sr-only" for="city-search">Search for a city</label>
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7" />
+              <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+            </svg>
+            <input
+              id="city-search"
+              name="city"
+              type="search"
+              placeholder="Search a city..."
+              autocomplete="off"
+              aria-controls="city-options"
+              aria-expanded="false"
+              required
+            />
+            <button class="search-button" type="submit">Search</button>
+          </form>
+          <div class="city-options" id="city-options" role="listbox" aria-label="Choose a city" hidden></div>
+        </div>
 
         <div class="header-note">
           <span class="live-dot" aria-hidden="true"></span>
@@ -78,15 +83,15 @@
                   </svg>
                 </span>
                 <div>
-                  <h2 id="current-city">New York</h2>
-                  <p id="current-country">United States</p>
+                  <h2 id="current-city">—</h2>
+                  <p id="current-country">Search for a city</p>
                 </div>
               </div>
               <button
                 class="favorite-toggle"
                 id="favorite-toggle"
                 type="button"
-                aria-label="Add New York to favourites"
+                aria-label="Add current city to favourites"
                 aria-pressed="false"
               >
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -98,16 +103,16 @@
 
             <div class="hero-weather">
               <div class="temperature-block">
-                <p class="today-label">TODAY, <span id="current-date">MONDAY, OCT 28</span></p>
+                <p class="today-label">TODAY,                 <span id="current-date">—</span></p>
                 <div class="temperature-line">
-                  <span class="temperature" id="current-temperature">72</span>
+                  <span class="temperature" id="current-temperature">—</span>
                   <span class="degree">°</span>
                   <span class="unit">F</span>
                 </div>
-                <p class="condition" id="current-condition">Partly cloudy</p>
+                <p class="condition" id="current-condition">Search for a city to see its forecast</p>
               </div>
               <div class="weather-art" aria-hidden="true">
-                <span id="current-icon">🌤️</span>
+                <span id="current-icon">🌡️</span>
                 <span class="art-orbit orbit-one"></span>
                 <span class="art-orbit orbit-two"></span>
               </div>
@@ -117,15 +122,15 @@
             <div class="weather-details">
               <div class="detail-item">
                 <span class="detail-icon wind-icon" aria-hidden="true">↗</span>
-                <div><span class="detail-label">WIND</span><strong id="current-wind">8 mph</strong></div>
+                <div><span class="detail-label">WIND</span><strong id="current-wind">—</strong></div>
               </div>
               <div class="detail-item">
                 <span class="detail-icon humidity-icon" aria-hidden="true">◌</span>
-                <div><span class="detail-label">HUMIDITY</span><strong id="current-humidity">54%</strong></div>
+                <div><span class="detail-label">HUMIDITY</span><strong id="current-humidity">—</strong></div>
               </div>
               <div class="detail-item">
                 <span class="detail-icon time-icon" aria-hidden="true">◷</span>
-                <div><span class="detail-label">LOCAL TIME</span><strong id="current-time">10:42 AM</strong></div>
+                <div><span class="detail-label">LOCAL TIME</span><strong id="current-time">—</strong></div>
               </div>
             </div>
           </section>
@@ -136,7 +141,13 @@
                 <p class="eyebrow">PLAN AHEAD</p>
                 <h2 id="forecast-title">7-day forecast</h2>
               </div>
-              <span class="forecast-unit">°F</span>
+              <button
+                class="forecast-unit"
+                id="unit-toggle"
+                type="button"
+                aria-label="Switch temperature unit"
+                title="Switch between Celsius and Fahrenheit"
+              >°F</button>
             </div>
             <div class="forecast-grid" id="forecast-grid" aria-live="polite"></div>
           </section>
@@ -144,7 +155,7 @@
           <footer class="page-footer">
             <span class="footer-sun" aria-hidden="true">✳</span>
             <span>A little sunshine goes a long way.</span>
-            <span class="footer-location" id="footer-location">NEW YORK · US</span>
+            <span class="footer-location" id="footer-location">SEARCH FOR A CITY</span>
           </footer>
         </section>
 
